@@ -31,6 +31,28 @@ class ChatScreen extends StatelessWidget {
 class _ChatView extends StatelessWidget {
   const _ChatView();
 
+  Widget _buildChatContent(ChatProvider chatProvider) {
+    if (chatProvider.messageList.isEmpty) {
+      return const Center(
+        child: Text('Start a conversation', style: TextStyle(fontSize: 20)),
+      );
+    }
+
+    return ListView.builder(
+      controller: chatProvider.chatScrollController,
+      itemCount: chatProvider.messageList.length,
+      itemBuilder: (context, index) {
+        final message = chatProvider.messageList[index];
+
+        if (message.fromWho == FromWho.me) {
+          return MyMessageBubble(message: message);
+        }
+
+        return HerMessageBubble(message: message);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
@@ -40,17 +62,8 @@ class _ChatView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
           children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: chatProvider.messageList.length,
-                itemBuilder: (context, index) {
-                  final message = chatProvider.messageList[index];
-
-                  return message.fromWho == FromWho.me ? MyMessageBubble(message: message) : const HerMessageBubble();
-                },
-              ),
-            ),
-            MessageFieldBox(onValue: chatProvider.sendMessage)
+            Expanded(child: _buildChatContent(chatProvider)),
+            MessageFieldBox(onValue: chatProvider.sendMessage),
           ],
         ),
       ),
